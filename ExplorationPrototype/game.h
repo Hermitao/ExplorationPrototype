@@ -39,6 +39,8 @@ public:
 
 	Game(sf::RenderWindow& window);
 	void clear();
+	void events();
 	void update();
 	void draw();
+	void generateMap();
 };

@@ -10,13 +10,7 @@ Game::Game(sf::RenderWindow& window) : window(window)
 		std::cout << "ERROR::Failed to load font (class)" << "\n";
 	}
 	text.setFont(font);
-
-	float radius = 4.0f;
-	float cosOf30 = 0.8660254f;
-	float sinOf30 = 0.5f;
-	float edgeDistance = cosOf30 * radius;
-	float edgeHalfLength = sinOf30 * radius;
-
+	
 	oceanColors[0] = sf::Color(202, 221, 236, 255);
 	oceanColors[1] = sf::Color(175, 203, 226, 255);
 	oceanColors[2] = sf::Color(146, 184, 216, 255);
@@ -44,7 +38,78 @@ Game::Game(sf::RenderWindow& window) : window(window)
 	noise.SetFractalGain(0.5f);
 	noise.SetSeed(10);
 
-    for (int y{ -1 }; y < screenHeight / (edgeHalfLength * 3.0f); ++y)
+	generateMap();
+}
+
+void Game::clear()
+{
+	window.clear(sf::Color::Black);
+}
+
+void Game::events()
+{
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
+	{
+		window.close();
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+	{
+		generateMap();
+	}
+}
+
+void Game::update()
+{
+	time = bootTime.getElapsedTime().asSeconds() * 4.0f;
+
+	// temporary
+	std::string topText = "Exploration Engine - Indev\nAldebaran Project\n";
+	std::ostringstream fpsTextFloat;
+	fpsTextFloat << (1.0f / deltaTime);
+	std::string fpsTextString(fpsTextFloat.str());
+	std::string finalText = topText + fpsTextString;
+	text.setString(finalText);
+	text.setCharacterSize(26);
+	text.setFillColor(sf::Color::Color(255, 255, 255, 255));
+	text.setOutlineColor(sf::Color(4, 5, 5, 255));
+	text.setOutlineThickness(2.0f);
+	// ----------
+
+	deltaTime = deltaClock.restart().asSeconds() * timeScale;
+}
+
+void Game::draw()
+{
+	std::list<sf::CircleShape>::iterator it;
+    for (it = hexagons.begin(); it != hexagons.end(); ++it)
+    {
+    	window.draw(*it);
+    }
+	std::list<sf::Text>::iterator it2;
+    for (it2 = heightTexts.begin(); it2 != heightTexts.end(); ++it2)
+    {
+    	window.draw(*it2);
+    }
+
+    window.draw(text);
+    window.display();
+}
+
+void Game::generateMap()
+{
+	hexagons.clear();
+	heightTexts.clear();
+
+	noise.SetSeed(rand() % 100000000);
+
+	float radius = 16.0f;
+	float cosOf30 = 0.8660254f;
+	float sinOf30 = 0.5f;
+	float edgeDistance = cosOf30 * radius;
+	float edgeHalfLength = sinOf30 * radius;
+
+	for (int y{ -1 }; y < screenHeight / (edgeHalfLength * 3.0f); ++y)
     {
     	for (int x{ -1 }; x < screenWidth / (edgeDistance * 2.0f); ++x)
     	{
@@ -130,59 +195,17 @@ Game::Game(sf::RenderWindow& window) : window(window)
     		hexagon.setPosition(hexagonPos);
     		hexagons.push_back(hexagon);
 
-		    // sf::Text heightText;
-		    // heightText.setFont(font);
-		    // heightText.setCharacterSize(12);
-		    // heightText.setFillColor(sf::Color::Color(255, 255, 255, 255));
-		    // std::ostringstream heightTextInt;
-		    // heightTextInt << (height);
-		    // std::string heightTextString(heightTextInt.str());
-		    // heightText.setString(heightTextString);
-		    // heightText.setPosition(sf::Vector2f(hexagonPos.x, hexagonPos.y));
-		    // heightTexts.push_back(heightText);
+		    sf::Text heightText;
+		    heightText.setFont(font);
+		    heightText.setCharacterSize(12);
+		    heightText.setFillColor(sf::Color::Color(255, 255, 255, 255));
+		    std::ostringstream heightTextInt;
+		    heightTextInt << (height);
+		    std::string heightTextString(heightTextInt.str());
+		    heightText.setString(heightTextString);
+		    heightText.setPosition(sf::Vector2f(hexagonPos.x, hexagonPos.y));
+		    heightTexts.push_back(heightText);
     	}
     }
-}
-
-void Game::clear()
-{
-	window.clear(sf::Color::Black);
-}
-
-void Game::update()
-{
-	time = bootTime.getElapsedTime().asSeconds() * 4.0f;
-
-	// temporary
-	std::string topText = "Exploration Engine - Indev\nAldebaran Project\n";
-	std::ostringstream fpsTextFloat;
-	fpsTextFloat << (1.0f / deltaTime);
-	std::string fpsTextString(fpsTextFloat.str());
-	std::string finalText = topText + fpsTextString;
-	text.setString(finalText);
-	text.setCharacterSize(26);
-	text.setFillColor(sf::Color::Color(255, 255, 255, 255));
-	text.setOutlineColor(sf::Color(4, 5, 5, 255));
-	text.setOutlineThickness(2.0f);
-	// ----------
-
-	deltaTime = deltaClock.restart().asSeconds() * timeScale;
-}
-
-void Game::draw()
-{
-	std::list<sf::CircleShape>::iterator it;
-    for (it = hexagons.begin(); it != hexagons.end(); ++it)
-    {
-    	window.draw(*it);
-    }
-	std::list<sf::Text>::iterator it2;
-    for (it2 = heightTexts.begin(); it2 != heightTexts.end(); ++it2)
-    {
-    	window.draw(*it2);
-    }
-
-    window.draw(text);
-    window.display();
 }
 
